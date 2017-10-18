@@ -1,10 +1,10 @@
 """
-    reduced_eigenvalues{N,NA,NB}(basis::Basis{N}, basis_A::SubsystemBasis{NA}, basis_B::SubsystemBasis{NB}, A_start, wf::AbstractVector{Float64})
+    reduced_eigenvalues{N,NA,NB}(basis::SingleBlockBasis{N}, basis_A::MultiBlockBasis{NA}, basis_B::MultiBlockBasis{NB}, A_start, wf::AbstractVector{Float64})
 
 Compute the reduced density matrix eigenvalues of state `wf` reduced to
 subsystem A.
 """
-function reduced_eigenvalues{N,NA,NB}(basis::Basis{N}, basis_A::SubsystemBasis{NA}, basis_B::SubsystemBasis{NB}, A_start, wf::AbstractVector{Float64})
+function reduced_eigenvalues{N,NA,NB}(basis::SingleBlockBasis{N}, basis_A::MultiBlockBasis{NA}, basis_B::MultiBlockBasis{NB}, A_start, wf::AbstractVector{Float64})
     # Correct subspace sizes.
     N == NA + NB || throw(DomainError())
     # Subsystem is inside the system.
@@ -14,23 +14,24 @@ function reduced_eigenvalues{N,NA,NB}(basis::Basis{N}, basis_A::SubsystemBasis{N
     v = Array{Int}(2N)
     eigvals = Float64[]
 
-    for block_A in basis_A.blocks
-        vectors_A = basis_A.vectors[block_A]
+    for (label_A, block_A) in basis_A.blocks
+        vectors_A = block_A.vectors
 
         # Only use blocks that have complementary lp and m.
-        block_B = (mod(basis.sym_lp-block_A[1], 2), basis.sym_m-block_A[2])
-        vectors_B = basis_B.vectors[block_B]
+        label_B = BlockLabel(mod(basis.label.lp-label_A.lp, 2), basis.label.m-label_A.m)
+        block_B = basis_B.blocks[label_B]
+        vectors_B = block_B.vectors
 
-        mat = zeros(basis_B.sizes[block_B], basis_A.sizes[block_A])
+        mat = zeros(block_B.size, block_A.size)
 
-        for col in 1:basis_A.sizes[block_A]
+        for col in 1:block_A.size
             l_total_col = 0
             for i in 1:2NA
                 v[2A_start+i-2] = vectors_A[col][i]
                 i % 2 == 1 && (l_total_col += v[2A_start+i-2])
             end
 
-            for row in 1:basis_B.sizes[block_B]
+            for row in 1:block_B.size
                 l_total = l_total_col
                 for i in 1:(2A_start-2)
                     v[i] = vectors_B[row][i]
@@ -43,7 +44,7 @@ function reduced_eigenvalues{N,NA,NB}(basis::Basis{N}, basis_A::SubsystemBasis{N
 
                 l_total <= basis.l_total_max || continue
 
-                mat[row, col] = wf[basis.lookup[v]]
+                mat[row, col] = wf[basis.block.lookup[v]]
             end
         end
 

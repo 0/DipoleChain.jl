@@ -1,8 +1,11 @@
 module DipoleChain
 
 export
-    Basis,
-    SubsystemBasis,
+    BlockLabel,
+    Block,
+    AbstractBasis,
+    SingleBlockBasis,
+    MultiBlockBasis,
 
     sparse_rot,
     sparse_pot,

@@ -64,7 +64,7 @@ A_size = c[:A_size]
 
 
 println("[ ] Constructing basis.")
-@time basis = Basis(N, l_max, l_total_max, sym_lp, sym_m)
+@time basis = SingleBlockBasis(N, l_max, l_total_max, sym_lp, sym_m)
 println("[+] Constructed basis: $(basis.size).")
 
 println("[ ] Constructing matrix elements.")
@@ -104,9 +104,9 @@ println("[+] Calculated correlations.")
 
 
 println("[ ] Constructing subsystem bases.")
-@time basis_A = SubsystemBasis(basis, A_size)
-@time basis_B = SubsystemBasis(basis, N-A_size)
-println("[+] Constructed subsystem bases: $(sum(values(basis_A.sizes))), $(sum(values(basis_B.sizes))).")
+@time basis_A = MultiBlockBasis(A_size, l_max, l_total_max)
+@time basis_B = MultiBlockBasis(N-A_size, l_max, l_total_max)
+println("[+] Constructed subsystem bases: $(basis_A.size), $(basis_B.size).")
 
 println("[ ] Calculating reduced eigenvalues.")
 @time eigvals = reduced_eigenvalues(basis, basis_A, basis_B, A_start, wf)

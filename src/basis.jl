@@ -68,30 +68,65 @@ Base.eltype(::Type{FlatBasis}) = Vector{Int}
 
 
 """
-Truncated basis for `N` rotors.
+Symmetry block label.
 """
-struct Basis{N}
+struct BlockLabel
+    "Total l parity."
+    lp::Int
+    "Total m value."
+    m::Int
+end
+
+
+"""
+Symmetry block of a basis for `N` rotors.
+"""
+struct Block{N}
+    "Basis vectors, each of the form [l_1, m_1, ..., l_N, m_N]."
+    vectors::Vector{Vector{Int}}
+    "Mapping from basis vectors to their indices."
+    lookup::Dict{Vector{Int},Int}
+
+    "Number of basis vectors."
+    size::Int
+end
+
+"""
+    Block(N::Int, vectors::Vector{Vector{Int}}, lookup::Dict{Vector{Int},Int})
+
+Create a block of `vectors` with corresponding `lookup` table for `N` rotors.
+"""
+function Block(N::Int, vectors::Vector{Vector{Int}}, lookup::Dict{Vector{Int},Int})
+    # For non-empty blocks, make sure N is correct.
+    length(vectors) == 0 || length(vectors[1]) == 2N || throw(DomainError())
+
+    Block{N}(vectors, lookup, length(vectors))
+end
+
+
+abstract type AbstractBasis{N} end
+
+
+"""
+Truncated basis for `N` rotors, containing a single symmetry block.
+"""
+struct SingleBlockBasis{N} <: AbstractBasis{N}
     "Local basis truncation."
     l_max::Int
     "Many-body basis truncation."
     l_total_max::Int
 
-    "Symmetry block total l parity."
-    sym_lp::Int
-    "Symmetry block total m value."
-    sym_m::Int
+    "Symmetry label for the block."
+    label::BlockLabel
+    "The block of basis vectors."
+    block::Block{N}
 
-    "Number of basis vectors."
+    "Total number of basis vectors."
     size::Int
-
-    "Basis vectors, each of the form [l_1, m_1, ..., l_N, m_N]."
-    vectors::Vector{Vector{Int}}
-    "Mapping from basis vectors to their indices."
-    lookup::Dict{Vector{Int},Int}
 end
 
 """
-    Basis(N::Int, l_max::Int, l_total_max::Int, sym_lp::Int, sym_m::Int)
+    SingleBlockBasis(N::Int, l_max::Int, l_total_max::Int, sym_lp::Int, sym_m::Int)
 
 Generate a truncated `N`-body basis of spherical harmonics.
 
@@ -101,7 +136,7 @@ that the sum of `l` values does not exceed `l_total_max`.
 Only states with total l parity `sym_lp` and total m value `sym_m` are
 included.
 """
-function Basis(N::Int, l_max::Int, l_total_max::Int, sym_lp::Int, sym_m::Int)
+function SingleBlockBasis(N::Int, l_max::Int, l_total_max::Int, sym_lp::Int, sym_m::Int)
     # At least one rotor.
     N >= 1 || throw(DomainError())
     # Non-negative l.
@@ -123,53 +158,66 @@ function Basis(N::Int, l_max::Int, l_total_max::Int, sym_lp::Int, sym_m::Int)
         lookup[vv] = length(vectors)
     end
 
-    Basis{N}(l_max, l_total_max, sym_lp, sym_m, length(vectors), vectors, lookup)
+    label = BlockLabel(sym_lp, sym_m)
+    block = Block(N, vectors, lookup)
+
+    SingleBlockBasis{N}(l_max, l_total_max, label, block, block.size)
 end
 
 
 """
-Truncated basis for a subsystem containing `NA` rotors.
+Truncated basis for `N` rotors, containing multiple symmetry blocks.
 """
-struct SubsystemBasis{NA}
-    "Basis for the system of which this is a subsystem."
-    parent::Basis
+struct MultiBlockBasis{N} <: AbstractBasis{N}
+    "Local basis truncation."
+    l_max::Int
+    "Many-body basis truncation."
+    l_total_max::Int
 
-    "Symmetry block labels of the form (lp, m)."
-    blocks::Vector{Tuple{Int,Int}}
-
-    "Number of basis vectors in each block."
-    sizes::Dict{Tuple{Int,Int},Int}
     "Blocks of basis vectors."
-    vectors::Dict{Tuple{Int,Int},Vector{Vector{Int}}}
+    blocks::Dict{BlockLabel,Block{N}}
+
+    "Total number of basis vectors."
+    size::Int
 end
 
 """
-    SubsystemBasis{N}(parent::Basis{N}, NA::Int)
+    MultiBlockBasis(N::Int, l_max::Int, l_total_max::Int)
 
-Generate a basis for `NA` sites of the full `parent` basis.
+Generate a truncated `N`-body basis of spherical harmonics.
+
+The local bases are truncated at `l_max`. The many-body basis is truncated so
+that the sum of `l` values does not exceed `l_total_max`.
 """
-function SubsystemBasis{N}(parent::Basis{N}, NA::Int)
+function MultiBlockBasis(N::Int, l_max::Int, l_total_max::Int)
     # At least one rotor.
-    NA >= 1 || throw(DomainError())
-    # Not all the rotors.
-    NA < N || throw(DomainError())
-
-    l_max = parent.l_max
-    l_total_max = parent.l_total_max
+    N >= 1 || throw(DomainError())
+    # Non-negative l.
+    l_max >= 0 || throw(DomainError())
+    l_total_max >= 0 || throw(DomainError())
 
     # For each site, the magnitude of m is bounded by l, so (by the triangle
     # inequality) the magnitude of the sum of the m values can't exceed the sum
     # of the l values, which is in turn bounded by l_total_max.
-    sizes = Dict(((lp, m), 0) for lp in 0:1 for m in -l_total_max:l_total_max)
     vectors = Dict(((lp, m), Vector{Int}[]) for lp in 0:1 for m in -l_total_max:l_total_max)
+    lookups = Dict(((lp, m), Dict{Vector{Int},Int}()) for lp in 0:1 for m in -l_total_max:l_total_max)
 
-    for v in FlatBasis{NA}(l_max, l_total_max)
-        lp_total = sum(v[2i-1] for i in 1:NA) % 2
-        m_total = sum(v[2i] for i in 1:NA)
+    for v in FlatBasis{N}(l_max, l_total_max)
+        lp_total = sum(v[2i-1] for i in 1:N) % 2
+        m_total = sum(v[2i] for i in 1:N)
 
-        sizes[(lp_total, m_total)] += 1
-        push!(vectors[(lp_total, m_total)], copy(v))
+        vv = copy(v)
+        push!(vectors[(lp_total, m_total)], vv)
+        lookups[(lp_total, m_total)][vv] = length(vectors[(lp_total, m_total)])
     end
 
-    SubsystemBasis{NA}(parent, sort(collect(keys(vectors))), sizes, vectors)
+    blocks = Dict{BlockLabel,Block{N}}()
+    size = 0
+    for (lp, m) in keys(vectors)
+        label = BlockLabel(lp, m)
+        blocks[label] = Block(N, vectors[(lp, m)], lookups[(lp, m)])
+        size += blocks[label].size
+    end
+
+    MultiBlockBasis{N}(l_max, l_total_max, blocks, size)
 end

@@ -1,16 +1,16 @@
 """
-    expval1{N}(basis::Basis{N}, op::AbstractMatrix, i::Int, wf::AbstractVector{Float64})
+    expval1{N}(basis::SingleBlockBasis{N}, op::AbstractMatrix, i::Int, wf::AbstractVector{Float64})
 
 Calculate the expectation value of the one-body operator `op` at site `i` in
 the state `wf`.
 """
-function expval1{N}(basis::Basis{N}, op::AbstractMatrix, i::Int, wf::AbstractVector{Float64})
+function expval1{N}(basis::SingleBlockBasis{N}, op::AbstractMatrix, i::Int, wf::AbstractVector{Float64})
     w = Array{Int}(2N)
 
     result = 0.0
 
-    for col in 1:basis.size
-        v = basis.vectors[col]
+    for col in 1:basis.block.size
+        v = basis.block.vectors[col]
 
         li = v[2i-1]
         mi = v[2i]
@@ -26,9 +26,9 @@ function expval1{N}(basis::Basis{N}, op::AbstractMatrix, i::Int, wf::AbstractVec
                 w[2i-1] = lip
                 w[2i] = mip
 
-                haskey(basis.lookup, w) || continue
+                haskey(basis.block.lookup, w) || continue
 
-                result += wf[basis.lookup[w]] * wf[col] * op[rowi, coli]
+                result += wf[basis.block.lookup[w]] * wf[col] * op[rowi, coli]
             end
         end
     end
@@ -37,18 +37,18 @@ function expval1{N}(basis::Basis{N}, op::AbstractMatrix, i::Int, wf::AbstractVec
 end
 
 """
-    expval2{N}(basis::Basis{N}, op_i::AbstractMatrix, i::Int, op_j::AbstractMatrix, j::Int, wf::AbstractVector{Float64})
+    expval2{N}(basis::SingleBlockBasis{N}, op_i::AbstractMatrix, i::Int, op_j::AbstractMatrix, j::Int, wf::AbstractVector{Float64})
 
 Calculate the expectation value of the two-body operator composed of `op_i` at
 site `i` and `op_j` at site `j` in the state `wf`.
 """
-function expval2{N}(basis::Basis{N}, op_i::AbstractMatrix, i::Int, op_j::AbstractMatrix, j::Int, wf::AbstractVector{Float64})
+function expval2{N}(basis::SingleBlockBasis{N}, op_i::AbstractMatrix, i::Int, op_j::AbstractMatrix, j::Int, wf::AbstractVector{Float64})
     w = Array{Int}(2N)
 
     result = 0.0
 
-    for col in 1:basis.size
-        v = basis.vectors[col]
+    for col in 1:basis.block.size
+        v = basis.block.vectors[col]
 
         li = v[2i-1]
         mi = v[2i]
@@ -75,9 +75,9 @@ function expval2{N}(basis::Basis{N}, op_i::AbstractMatrix, i::Int, op_j::Abstrac
                         w[2j-1] = ljp
                         w[2j] = mjp
 
-                        haskey(basis.lookup, w) || continue
+                        haskey(basis.block.lookup, w) || continue
 
-                        result += wf[basis.lookup[w]] * wf[col] * op_i[rowi, coli] * op_j[rowj, colj]
+                        result += wf[basis.block.lookup[w]] * wf[col] * op_i[rowi, coli] * op_j[rowj, colj]
                     end
                 end
             end
