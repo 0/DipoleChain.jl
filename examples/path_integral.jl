@@ -45,12 +45,12 @@ s.autofix_names = true
         action = :store_true
     "--A-start"
         metavar = "jA"
-        help = "first rotor of subsystem A (default: 1; PIGS only)"
+        help = "first rotor of subsystem A (PIGS only)"
         arg_type = Int
         default = 1
     "--A-size"
         metavar = "NA"
-        help = "length of subsystem A (default: 1; PIGS only)"
+        help = "length of subsystem A (PIGS only)"
         arg_type = Int
         default = 1
 end

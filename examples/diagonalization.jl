@@ -29,22 +29,22 @@ s.autofix_names = true
         arg_type = Int
     "--sym-lp"
         metavar = "LP"
-        help = "total l parity of symmetry block (default: 0)"
+        help = "total l parity of symmetry block"
         arg_type = Int
         default = 0
     "--sym-m"
         metavar = "M"
-        help = "total m value of symmetry block (default: 0)"
+        help = "total m value of symmetry block"
         arg_type = Int
         default = 0
     "--A-start"
         metavar = "jA"
-        help = "first rotor of subsystem A (default: 1)"
+        help = "first rotor of subsystem A"
         arg_type = Int
         default = 1
     "--A-size"
         metavar = "NA"
-        help = "length of subsystem A (default: 1)"
+        help = "length of subsystem A"
         arg_type = Int
         default = 1
 end
