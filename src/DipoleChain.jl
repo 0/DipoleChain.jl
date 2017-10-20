@@ -8,7 +8,10 @@ export
     MultiBlockBasis,
 
     sparse_rot,
+    diag_rot,
     sparse_pot,
+    dense_pot,
+    scale_dense_pot,
     dense_x,
     dense_iy,
     dense_z,

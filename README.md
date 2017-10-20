@@ -1,6 +1,6 @@
 # DipoleChain.jl
 
-Exact (sparse) diagonalization for a linear chain of evenly-spaced [linear rigid rotors](https://en.wikipedia.org/wiki/Rigid_rotor#Quantum_mechanical_linear_rigid_rotor) with [dipole-dipole interactions](https://en.wikipedia.org/wiki/Intermolecular_force#Dipole-dipole_interactions).
+Exact sparse diagonalization and path integral matrix multiplication for a linear chain of evenly-spaced [linear rigid rotors](https://en.wikipedia.org/wiki/Rigid_rotor#Quantum_mechanical_linear_rigid_rotor) with [dipole-dipole interactions](https://en.wikipedia.org/wiki/Intermolecular_force#Dipole-dipole_interactions).
 
 Tested with Julia 0.6.
 
@@ -32,10 +32,14 @@ To simplify the situation, we instead use the one-parameter dimensionless Hamilt
 The only parameter is the separation distance `R` in natural length units, which may be found from the physical parameters using `R = r / (\mu^2 / 4 \pi \epsilon_0 B)^{1/3}`.
 The resulting eigenvalues are in natural energy units and may be converted to physical energies by multiplying in the rotational constant `B`.
 
+Reciprocal temperatures are in units of reciprocal energy (i.e. the [Boltzmann constant](https://en.wikipedia.org/wiki/Boltzmann_constant) is set to 1).
+
 
 ## Examples
 
 * `julia examples/diagonalization.jl -R 1.23 -N 4 --l-max 3 --A-start 2 --A-size 1`
+* `julia examples/path_integral.jl -R 1.23 -N 2 --l-max 3 --beta 45.67 -P 8`
+* `julia examples/path_integral.jl -R 1.23 -N 2 --l-max 3 --tau 4.54 -P 3 --pigs --A-start 2 --A-size 1`
 
 
 ## License

@@ -1,17 +1,12 @@
-"""
-    sparse_rot{N}(basis::SingleBlockBasis{N})
-
-Compute a sparse representation of the dimensionless rotational energy matrix.
-"""
-function sparse_rot{N}(basis::SingleBlockBasis{N})
+function sparse_rot{N}(block::Block{N})
     rows = Int[]
     elems = Float64[]
 
-    for row in 1:basis.block.size
+    for row in 1:block.size
         elem = 0.0
 
         for i in 1:N
-            l = basis.block.vectors[row][2i-1]
+            l = block.vectors[row][2i-1]
             elem += l*(l+1)
         end
 
@@ -19,8 +14,40 @@ function sparse_rot{N}(basis::SingleBlockBasis{N})
         push!(elems, elem)
     end
 
-    sparse(rows, rows, elems, basis.block.size, basis.block.size)
+    sparse(rows, rows, elems, block.size, block.size)
 end
+
+"""
+    sparse_rot{N}(basis::SingleBlockBasis{N})
+
+Compute a sparse representation of the dimensionless rotational energy matrix.
+"""
+sparse_rot{N}(basis::SingleBlockBasis{N}) = sparse_rot(basis.block)
+
+"""
+    diag_rot{N}(basis::SingleBlockBasis{N})
+
+Compute a diagonal representation of the dimensionless rotational energy
+matrix.
+"""
+diag_rot{N}(basis::SingleBlockBasis{N}) = diag(sparse_rot(basis.block))
+
+"""
+    diag_rot{N}(basis::MultiBlockBasis{N})
+
+Compute a diagonal representation of the dimensionless rotational energy
+matrix.
+"""
+function diag_rot{N}(basis::MultiBlockBasis{N})
+    result = Dict{BlockLabel,Vector{Float64}}()
+
+    for (label, block) in basis.blocks
+        result[label] = diag(sparse_rot(block))
+    end
+
+    result
+end
+
 
 function C(l::Int, lp::Int, m::Int)
     if lp == l-1
@@ -56,21 +83,16 @@ function pot_elem(l1::Int, m1::Int, l2::Int, m2::Int, l1p::Int, m1p::Int, l2p::I
     end
 end
 
-"""
-    sparse_pot{N}(basis::SingleBlockBasis{N})
 
-Compute a sparse representation of the dimensionless potential energy matrix
-for dipole-dipole interactions between all rotor pairs.
-"""
-function sparse_pot{N}(basis::SingleBlockBasis{N})
+function sparse_pot{N}(basis::AbstractBasis{N}, block::Block{N})
     rows = Int[]
     cols = Int[]
     elems = Float64[]
 
     w = Array{Int}(2N)
 
-    for col in 1:basis.block.size
-        v = basis.block.vectors[col]
+    for col in 1:block.size
+        v = block.vectors[col]
         l_total = 0
         for i in 1:N
             l_total += v[2i-1]
@@ -97,7 +119,7 @@ function sparse_pot{N}(basis::SingleBlockBasis{N})
                             -w[2i-1] <= w[2i] <= w[2i-1] || continue
                             -w[2j-1] <= w[2j] <= w[2j-1] || continue
 
-                            row = basis.block.lookup[w]
+                            row = block.lookup[w]
                             elem = 0.5 * pot_elem(v[2i-1], v[2i], v[2j-1], v[2j], w[2i-1], w[2i], w[2j-1], w[2j]) / (j-i)^3
 
                             push!(rows, row)
@@ -110,8 +132,62 @@ function sparse_pot{N}(basis::SingleBlockBasis{N})
         end
     end
 
-    sparse(rows, cols, elems, basis.block.size, basis.block.size)
+    sparse(rows, cols, elems, block.size, block.size)
 end
+
+"""
+    sparse_pot{N}(basis::SingleBlockBasis{N})
+
+Compute a sparse representation of the dimensionless potential energy matrix
+for dipole-dipole interactions between all rotor pairs.
+"""
+sparse_pot{N}(basis::SingleBlockBasis{N}) = sparse_pot(basis, basis.block)
+
+"""
+    dense_pot{N}(basis::SingleBlockBasis{N})
+
+Compute a dense representation of the dimensionless potential energy matrix for
+dipole-dipole interactions between all rotor pairs.
+"""
+dense_pot{N}(basis::SingleBlockBasis{N}) = full(sparse_pot(basis, basis.block))
+
+"""
+    dense_pot{N}(basis::MultiBlockBasis{N})
+
+Compute a dense representation of the dimensionless potential energy matrix for
+dipole-dipole interactions between all rotor pairs.
+"""
+function dense_pot{N}(basis::MultiBlockBasis{N})
+    result = Dict{BlockLabel,Matrix{Float64}}()
+
+    for (label, block) in basis.blocks
+        result[label] = full(sparse_pot(basis, block))
+    end
+
+    result
+end
+
+
+"""
+    scale_dense_pot(pot::Matrix{Float64}, k::Float64)
+
+Scale the matrix elements of `pot` in place by a factor of `k`.
+"""
+function scale_dense_pot(pot::Matrix{Float64}, k::Float64)
+    pot .*= k
+end
+
+"""
+    scale_dense_pot(pot::Dict{BlockLabel,Matrix{Float64}}, k::Float64)
+
+Scale the matrix elements of `pot` in place by a factor of `k`.
+"""
+function scale_dense_pot(pot::Dict{BlockLabel,Matrix{Float64}}, k::Float64)
+    for block in values(pot)
+        block .*= k
+    end
+end
+
 
 """
     dense_x{N}(basis::SingleBlockBasis{N})
