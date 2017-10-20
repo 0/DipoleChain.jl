@@ -151,16 +151,16 @@ println("[+] Calculated energies.")
 
 if pigs
     # Ground state energy.
-    println("E0 = $(E0)")
+    println_result("E0 = $(E0)")
 else
     # Partition function.
-    println("Z = $(Z)")
+    println_result("Z = $(Z)")
     # Rotational energy.
-    println("K = $(avgK)")
+    println_result("K = $(avgK)")
     # Potential energy.
-    println("V = $(avgV)")
+    println_result("V = $(avgV)")
     # Total energy.
-    println("E = $(E)")
+    println_result("E = $(E)")
 end
 
 
@@ -175,7 +175,7 @@ if pigs
     println("[+] Calculated reduced eigenvalues.")
 
     # Von Neumann entropy.
-    println("SvN = $(S_vn(eigvals))")
+    println_result("SvN = $(S_vn(eigvals))")
     # Order-2 Rényi entropy.
-    println("S2 = $(S_renyi(eigvals, 2))")
+    println_result("S2 = $(S_renyi(eigvals, 2))")
 end

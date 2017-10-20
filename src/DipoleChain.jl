@@ -1,6 +1,8 @@
 module DipoleChain
 
 export
+    println_result,
+
     BlockLabel,
     Block,
     AbstractBasis,
@@ -22,6 +24,8 @@ export
     reduced_eigenvalues,
     S_vn,
     S_renyi
+
+include("util.jl")
 
 include("basis.jl")
 include("operators.jl")

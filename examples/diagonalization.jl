@@ -82,12 +82,12 @@ wf = d[2][:,1]
 println("[+] Done diagonalizing: $(d[4]).")
 
 # Ground state energy.
-println("E0 = $(E0)")
+println_result("E0 = $(E0)")
 
 
 println("[ ] Calculating correlations.")
 @time for (op_name, op_f) in [("x", dense_x), ("z", dense_z)]
-    println("<$(op_name)_i $(op_name)_j>")
+    println_result("<$(op_name)_i $(op_name)_j>")
     op = op_f(basis)
     for i in 1:N
         for j in 1:(i-1)
@@ -113,6 +113,6 @@ println("[ ] Calculating reduced eigenvalues.")
 println("[+] Calculated reduced eigenvalues.")
 
 # Von Neumann entropy.
-println("SvN = $(S_vn(eigvals))")
+println_result("SvN = $(S_vn(eigvals))")
 # Order-2 Rényi entropy.
-println("S2 = $(S_renyi(eigvals, 2))")
+println_result("S2 = $(S_renyi(eigvals, 2))")
