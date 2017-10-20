@@ -37,7 +37,9 @@ Reciprocal temperatures are in units of reciprocal energy (i.e. the [Boltzmann c
 
 ## Examples
 
+* `julia examples/diagonalization.jl --help`
 * `julia examples/diagonalization.jl -R 1.23 -N 4 --l-max 3 --A-start 2 --A-size 1`
+* `julia examples/path_integral.jl --help`
 * `julia examples/path_integral.jl -R 1.23 -N 2 --l-max 3 --beta 45.67 -P 8`
 * `julia examples/path_integral.jl -R 1.23 -N 2 --l-max 3 --tau 4.54 -P 3 --pigs --A-start 2 --A-size 1`
 
