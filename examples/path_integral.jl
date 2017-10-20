@@ -110,42 +110,25 @@ println("[+] Constructed matrix elements.")
 
 println("[ ] Constructing path.")
 @time if pigs
-    eK = diagm(exp.(-tau * K))
-    eV = expm(-0.5 * tau * V)
-    half_path = (eV * eK * eV)^(div(num_links, 2))
-
     # Trial function is free rotor ground state.
     trial_idx = basis.block.lookup[[0 for _ in 1:2N]]
 
-    wf = half_path[:, trial_idx]
-    wf /= sqrt(sum(wf.^2))
+    half_path = symmetric_trotter_path(div(num_links, 2), tau, K, V)
     path = half_path * half_path
+    wf = wf_pigs(half_path, trial_idx)
 else
-    path = Dict{BlockLabel,Matrix{Float64}}()
-    for label in keys(basis.blocks)
-        eK = diagm(exp.(-tau * K[label]))
-        eV = expm(-0.5 * tau * V[label])
-        path[label] = (eV * eK * eV)^num_links
-    end
+    path = symmetric_trotter_path(num_links, tau, K, V)
 end
 println("[+] Constructed path.")
 
 println("[ ] Calculating energies.")
 @time if pigs
-    # Mixed estimator.
-    E0 = (path * V)[trial_idx, trial_idx] / path[trial_idx, trial_idx]
+    E0, (avgK, avgV) = energy_mixed(path, trial_idx, K, V)
+    # For a spherically symmetric trial function, the kinetic contribution to
+    # the mixed estimator should vanish.
+    avgK == 0.0 || warn("avgK == $(avgK)")
 else
-    Z = 0.0
-    avgK = 0.0
-    avgV = 0.0
-    for label in keys(basis.blocks)
-        Z += trace(path[label])
-        avgK += trace(path[label] * diagm(K[label]))
-        avgV += trace(path[label] * V[label])
-    end
-    avgK /= Z
-    avgV /= Z
-    E = avgK + avgV
+    Z, E, (avgK, avgV) = energy(path, K, V)
 end
 println("[+] Calculated energies.")
 

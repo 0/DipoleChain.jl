@@ -21,6 +21,11 @@ export
     expval1,
     expval2,
 
+    symmetric_trotter_path,
+    wf_pigs,
+    energy,
+    energy_mixed,
+
     reduced_eigenvalues,
     S_vn,
     S_renyi
@@ -30,6 +35,7 @@ include("util.jl")
 include("basis.jl")
 include("operators.jl")
 include("expectation.jl")
+include("path_integrals.jl")
 include("entanglement.jl")
 
 end
