@@ -39,14 +39,14 @@ s.autofix_names = true
         default = 0
     "--A-start"
         metavar = "jA"
-        help = "first rotor of subsystem A"
+        help = "first rotor of subsystem A (default: 1)"
         arg_type = Int
-        required = true
+        default = 1
     "--A-size"
         metavar = "NA"
-        help = "length of subsystem A"
+        help = "length of subsystem A (default: 1)"
         arg_type = Int
-        required = true
+        default = 1
 end
 c = parse_args(ARGS, s, as_symbols=true)
 
