@@ -19,6 +19,8 @@ function reduced_eigenvalues{N,NA,NB}(basis::SingleBlockBasis{N}, basis_A::Multi
 
         # Only use blocks that have complementary lp and m.
         label_B = BlockLabel(mod(basis.label.lp-label_A.lp, 2), basis.label.m-label_A.m)
+        haskey(basis_B.blocks, label_B) || continue
+
         block_B = basis_B.blocks[label_B]
         vectors_B = block_B.vectors
 
