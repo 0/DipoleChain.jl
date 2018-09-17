@@ -1,5 +1,5 @@
 """
-    reduced_eigenvalues(basis::SingleBlockBasis{N}, basis_A::MultiBlockBasis{NA}, basis_B::MultiBlockBasis{NB}, A_start, wf::AbstractVector{Float64})
+    reduced_eigenvalues(basis::SingleBlockBasis, basis_A::MultiBlockBasis, basis_B::MultiBlockBasis, A_start, wf::AbstractVector{Float64})
 
 Compute the reduced density matrix eigenvalues of state `wf` reduced to
 subsystem A.

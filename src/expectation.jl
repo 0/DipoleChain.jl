@@ -1,5 +1,5 @@
 """
-    expval1(basis::SingleBlockBasis{N}, op::AbstractMatrix, i::Int, wf::AbstractVector{Float64})
+    expval1(basis::SingleBlockBasis, op::AbstractMatrix, i::Int, wf::AbstractVector{Float64})
 
 Calculate the expectation value of the one-body operator `op` at site `i` in
 the state `wf`.
@@ -37,7 +37,7 @@ function expval1(basis::SingleBlockBasis{N}, op::AbstractMatrix, i::Int, wf::Abs
 end
 
 """
-    expval2(basis::SingleBlockBasis{N}, op_i::AbstractMatrix, i::Int, op_j::AbstractMatrix, j::Int, wf::AbstractVector{Float64})
+    expval2(basis::SingleBlockBasis, op_i::AbstractMatrix, i::Int, op_j::AbstractMatrix, j::Int, wf::AbstractVector{Float64})
 
 Calculate the expectation value of the two-body operator composed of `op_i` at
 site `i` and `op_j` at site `j` in the state `wf`.
