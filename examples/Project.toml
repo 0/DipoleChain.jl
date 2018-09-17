@@ -1,0 +1,7 @@
+name = "DipoleChain example scripts"
+authors = ["Dmitri Iouchtchenko <diouchtc@uwaterloo.ca>"]
+
+[deps]
+ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
+Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
+DipoleChain = "a2a04298-baae-11e8-0c97-c92f7292435b"

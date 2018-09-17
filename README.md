@@ -17,6 +17,19 @@ pkg> add ArgParse
 pkg> add Arpack
 ```
 
+### Application project
+
+If you're working with a clone of this repository, you can use the basic application project in `examples/`, which already has `DipoleChain`, `ArgParse`, and `Arpack` as dependencies.
+From the repository root, run
+```
+julia --project=examples
+```
+and then
+```
+pkg> dev .
+```
+to create `examples/Manifest.toml` with a development version of `DipoleChain`.
+
 
 ## Units
 
