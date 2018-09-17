@@ -1,4 +1,4 @@
-function sparse_rot{N}(block::Block{N})
+function sparse_rot(block::Block{N}) where {N}
     rows = Int[]
     elems = Float64[]
 
@@ -18,27 +18,27 @@ function sparse_rot{N}(block::Block{N})
 end
 
 """
-    sparse_rot{N}(basis::SingleBlockBasis{N})
+    sparse_rot(basis::SingleBlockBasis{N})
 
 Compute a sparse representation of the dimensionless rotational energy matrix.
 """
-sparse_rot{N}(basis::SingleBlockBasis{N}) = sparse_rot(basis.block)
+sparse_rot(basis::SingleBlockBasis{N}) where {N} = sparse_rot(basis.block)
 
 """
-    diag_rot{N}(basis::SingleBlockBasis{N})
-
-Compute a diagonal representation of the dimensionless rotational energy
-matrix.
-"""
-diag_rot{N}(basis::SingleBlockBasis{N}) = diag(sparse_rot(basis.block))
-
-"""
-    diag_rot{N}(basis::MultiBlockBasis{N})
+    diag_rot(basis::SingleBlockBasis{N})
 
 Compute a diagonal representation of the dimensionless rotational energy
 matrix.
 """
-function diag_rot{N}(basis::MultiBlockBasis{N})
+diag_rot(basis::SingleBlockBasis{N}) where {N} = diag(sparse_rot(basis.block))
+
+"""
+    diag_rot(basis::MultiBlockBasis{N})
+
+Compute a diagonal representation of the dimensionless rotational energy
+matrix.
+"""
+function diag_rot(basis::MultiBlockBasis{N}) where {N}
     result = Dict{BlockLabel,Vector{Float64}}()
 
     for (label, block) in basis.blocks
@@ -84,12 +84,12 @@ function pot_elem(l1::Int, m1::Int, l2::Int, m2::Int, l1p::Int, m1p::Int, l2p::I
 end
 
 
-function sparse_pot{N}(basis::AbstractBasis{N}, block::Block{N})
+function sparse_pot(basis::AbstractBasis{N}, block::Block{N}) where {N}
     rows = Int[]
     cols = Int[]
     elems = Float64[]
 
-    w = Array{Int}(2N)
+    w = Array{Int}(undef, 2N)
 
     for col in 1:block.size
         v = block.vectors[col]
@@ -136,32 +136,32 @@ function sparse_pot{N}(basis::AbstractBasis{N}, block::Block{N})
 end
 
 """
-    sparse_pot{N}(basis::SingleBlockBasis{N})
+    sparse_pot(basis::SingleBlockBasis{N})
 
 Compute a sparse representation of the dimensionless potential energy matrix
 for dipole-dipole interactions between all rotor pairs.
 """
-sparse_pot{N}(basis::SingleBlockBasis{N}) = sparse_pot(basis, basis.block)
+sparse_pot(basis::SingleBlockBasis{N}) where {N} = sparse_pot(basis, basis.block)
 
 """
-    dense_pot{N}(basis::SingleBlockBasis{N})
-
-Compute a dense representation of the dimensionless potential energy matrix for
-dipole-dipole interactions between all rotor pairs.
-"""
-dense_pot{N}(basis::SingleBlockBasis{N}) = full(sparse_pot(basis, basis.block))
-
-"""
-    dense_pot{N}(basis::MultiBlockBasis{N})
+    dense_pot(basis::SingleBlockBasis{N})
 
 Compute a dense representation of the dimensionless potential energy matrix for
 dipole-dipole interactions between all rotor pairs.
 """
-function dense_pot{N}(basis::MultiBlockBasis{N})
+dense_pot(basis::SingleBlockBasis{N}) where {N} = Matrix(sparse_pot(basis, basis.block))
+
+"""
+    dense_pot(basis::MultiBlockBasis{N})
+
+Compute a dense representation of the dimensionless potential energy matrix for
+dipole-dipole interactions between all rotor pairs.
+"""
+function dense_pot(basis::MultiBlockBasis{N}) where {N}
     result = Dict{BlockLabel,Matrix{Float64}}()
 
     for (label, block) in basis.blocks
-        result[label] = full(sparse_pot(basis, block))
+        result[label] = Matrix(sparse_pot(basis, block))
     end
 
     result
@@ -190,11 +190,11 @@ end
 
 
 """
-    dense_x{N}(basis::SingleBlockBasis{N})
+    dense_x(basis::SingleBlockBasis{N})
 
 Compute a dense representation of the single-rotor x operator.
 """
-function dense_x{N}(basis::SingleBlockBasis{N})
+function dense_x(basis::SingleBlockBasis{N}) where {N}
     l_max = basis.l_max
 
     result = zeros(Float64, (l_max+1)^2, (l_max+1)^2)
@@ -225,11 +225,11 @@ function dense_x{N}(basis::SingleBlockBasis{N})
 end
 
 """
-    dense_iy{N}(basis::SingleBlockBasis{N})
+    dense_iy(basis::SingleBlockBasis{N})
 
 Compute a dense representation of the single-rotor iy operator.
 """
-function dense_iy{N}(basis::SingleBlockBasis{N})
+function dense_iy(basis::SingleBlockBasis{N}) where {N}
     l_max = basis.l_max
 
     result = zeros(Float64, (l_max+1)^2, (l_max+1)^2)
@@ -260,11 +260,11 @@ function dense_iy{N}(basis::SingleBlockBasis{N})
 end
 
 """
-    dense_z{N}(basis::SingleBlockBasis{N})
+    dense_z(basis::SingleBlockBasis{N})
 
 Compute a dense representation of the single-rotor z operator.
 """
-function dense_z{N}(basis::SingleBlockBasis{N})
+function dense_z(basis::SingleBlockBasis{N}) where {N}
     l_max = basis.l_max
 
     result = zeros(Float64, (l_max+1)^2, (l_max+1)^2)

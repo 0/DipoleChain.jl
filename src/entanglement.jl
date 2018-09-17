@@ -1,17 +1,15 @@
 """
-    reduced_eigenvalues{N,NA,NB}(basis::SingleBlockBasis{N}, basis_A::MultiBlockBasis{NA}, basis_B::MultiBlockBasis{NB}, A_start, wf::AbstractVector{Float64})
+    reduced_eigenvalues(basis::SingleBlockBasis{N}, basis_A::MultiBlockBasis{NA}, basis_B::MultiBlockBasis{NB}, A_start, wf::AbstractVector{Float64})
 
 Compute the reduced density matrix eigenvalues of state `wf` reduced to
 subsystem A.
 """
-function reduced_eigenvalues{N,NA,NB}(basis::SingleBlockBasis{N}, basis_A::MultiBlockBasis{NA}, basis_B::MultiBlockBasis{NB}, A_start, wf::AbstractVector{Float64})
-    # Correct subspace sizes.
-    N == NA + NB || throw(DomainError())
-    # Subsystem is inside the system.
-    A_start >= 1 || throw(DomainError())
-    A_start + NA - 1 <= N || throw(DomainError())
+function reduced_eigenvalues(basis::SingleBlockBasis{N}, basis_A::MultiBlockBasis{NA}, basis_B::MultiBlockBasis{NB}, A_start, wf::AbstractVector{Float64}) where {N,NA,NB}
+    N == NA + NB || throw(DomainError((NA, NB), "Incorrect subspace sizes."))
+    A_start >= 1 || throw(DomainError((A_start, NA), "Subsystem must be inside system."))
+    A_start + NA - 1 <= N || throw(DomainError((A_start, NA), "Subsystem must be inside system."))
 
-    v = Array{Int}(2N)
+    v = Array{Int}(undef, 2N)
     eigvals = Float64[]
 
     for (label_A, block_A) in basis_A.blocks
@@ -53,7 +51,7 @@ function reduced_eigenvalues{N,NA,NB}(basis::SingleBlockBasis{N}, basis_A::Multi
         append!(eigvals, abs2.(svdvals(mat)))
     end
 
-    abs(sum(eigvals) - 1.0) < 1e-12 || warn("Bad trace: $(abs(sum(eigvals) - 1.0))")
+    abs(sum(eigvals) - 1.0) < 1e-12 || @warn("Bad trace: $(abs(sum(eigvals) - 1.0))")
 
     eigvals
 end

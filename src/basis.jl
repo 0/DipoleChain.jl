@@ -9,26 +9,21 @@ struct FlatBasis{N}
 end
 
 mutable struct FlatBasisIterState
-    v_prev::Vector{Int}
     v::Vector{Int}
-
     l_total::Int
-    done::Bool
 end
 
-function Base.start{N}(::FlatBasis{N})
-    v_prev = Array{Int}(2N)
+function FlatBasisIterState(::FlatBasis{N}) where {N}
     v = zeros(Int, 2N)
+    # m = -1
+    v[2] -= 1
 
     l_total = 0
-    done = false
 
-    FlatBasisIterState(v_prev, v, l_total, done)
+    FlatBasisIterState(v, l_total)
 end
 
-function Base.next{N}(fb::FlatBasis{N}, state::FlatBasisIterState)
-    state.v_prev .= state.v
-
+function Base.iterate(fb::FlatBasis{N}, state::FlatBasisIterState=FlatBasisIterState(fb)) where {N}
     for i in 1:N
         # m += 1
         state.v[2i] += 1
@@ -47,7 +42,7 @@ function Base.next{N}(fb::FlatBasis{N}, state::FlatBasisIterState)
                 # m = 0
                 state.v[2i] = 0
 
-                i == N && (state.done = true)
+                i == N && return nothing
 
                 continue
             else
@@ -59,10 +54,8 @@ function Base.next{N}(fb::FlatBasis{N}, state::FlatBasisIterState)
         break
     end
 
-    state.v_prev, state
+    state.v, state
 end
-
-Base.done(::FlatBasis, state::FlatBasisIterState) = state.done
 
 Base.eltype(::Type{FlatBasis}) = Vector{Int}
 
@@ -98,7 +91,7 @@ Create a block of `vectors` with corresponding `lookup` table for `N` rotors.
 """
 function Block(N::Int, vectors::Vector{Vector{Int}}, lookup::Dict{Vector{Int},Int})
     # For non-empty blocks, make sure N is correct.
-    length(vectors) == 0 || length(vectors[1]) == 2N || throw(DomainError())
+    length(vectors) == 0 || length(vectors[1]) == 2N || throw(DomainError(N, "Invalid number of rotors."))
 
     Block{N}(vectors, lookup, length(vectors))
 end
@@ -137,11 +130,9 @@ Only states with total l parity `sym_lp` and total m value `sym_m` are
 included.
 """
 function SingleBlockBasis(N::Int, l_max::Int, l_total_max::Int, sym_lp::Int, sym_m::Int)
-    # At least one rotor.
-    N >= 1 || throw(DomainError())
-    # Non-negative l.
-    l_max >= 0 || throw(DomainError())
-    l_total_max >= 0 || throw(DomainError())
+    N >= 1 || throw(DomainError(N, "At least one rotor."))
+    l_max >= 0 || throw(DomainError(l_max, "Non-positive l_max."))
+    l_total_max >= 0 || throw(DomainError(l_total_max, "Non-positive l_total_max."))
 
     vectors = Vector{Int}[]
     lookup = Dict{Vector{Int},Int}()
@@ -190,11 +181,9 @@ The local bases are truncated at `l_max`. The many-body basis is truncated so
 that the sum of `l` values does not exceed `l_total_max`.
 """
 function MultiBlockBasis(N::Int, l_max::Int, l_total_max::Int)
-    # At least one rotor.
-    N >= 1 || throw(DomainError())
-    # Non-negative l.
-    l_max >= 0 || throw(DomainError())
-    l_total_max >= 0 || throw(DomainError())
+    N >= 1 || throw(DomainError(N, "At least one rotor."))
+    l_max >= 0 || throw(DomainError(l_max, "Non-positive l_max."))
+    l_total_max >= 0 || throw(DomainError(l_total_max, "Non-positive l_total_max."))
 
     # For each site, the magnitude of m is bounded by l, so (by the triangle
     # inequality) the magnitude of the sum of the m values can't exceed the sum

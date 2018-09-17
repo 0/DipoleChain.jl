@@ -1,5 +1,8 @@
 module DipoleChain
 
+using LinearAlgebra: diag, diagm, I, svdvals, tr
+using SparseArrays: sparse
+
 export
     println_result,
 

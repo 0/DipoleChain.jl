@@ -1,21 +1,21 @@
-# DipoleChain.jl
+# DipoleChain
 
 Exact sparse diagonalization and path integral matrix multiplication for a linear chain of evenly-spaced [linear rigid rotors](https://en.wikipedia.org/wiki/Rigid_rotor#Quantum_mechanical_linear_rigid_rotor) with [dipole-dipole interactions](https://en.wikipedia.org/wiki/Intermolecular_force#Dipole-dipole_interactions).
 
-Tested with Julia 0.6.
+Tested with Julia 1.0.
 
 
 ## Installation
 
-1. `Pkg.clone("https://github.com/0/DipoleChain.jl.git")`
+```
+pkg> add https://github.com/0/DipoleChain.jl.git
+```
 
-
-### Requirements
-
-These should be pulled in automatically when installing this package.
-To use it without installing it (e.g. from a local git checkout), you'll need to manually obtain the following dependencies:
-
-* ArgParse (`Pkg.add("ArgParse")`)
+In order to run the example scripts in `examples/`, you will also need to
+```
+pkg> add ArgParse
+pkg> add Arpack
+```
 
 
 ## Units
@@ -36,6 +36,8 @@ Reciprocal temperatures are in units of reciprocal energy (i.e. the [Boltzmann c
 
 
 ## Examples
+
+To run the following examples, you should set the project (e.g. using `--project` or `JULIA_PROJECT`) to a Julia project that has the prerequisites installed.
 
 * `julia examples/diagonalization.jl --help`
 * `julia --color=yes examples/diagonalization.jl -R 1.23 -N 4 --l-max 3 --A-start 2 --A-size 1`

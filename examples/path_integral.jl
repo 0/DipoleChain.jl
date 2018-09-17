@@ -1,6 +1,5 @@
 #!/usr/bin/env julia
 
-push!(LOAD_PATH, joinpath(dirname(@__FILE__), "../src"))
 using DipoleChain
 
 using ArgParse
@@ -126,7 +125,7 @@ println("[ ] Calculating energies.")
     E0, (avgK, avgV) = energy_mixed(path, trial_idx, K, V)
     # For a spherically symmetric trial function, the kinetic contribution to
     # the mixed estimator should vanish.
-    avgK == 0.0 || warn("avgK == $(avgK)")
+    avgK == 0.0 || @warn("avgK == $(avgK)")
 else
     Z, E, (avgK, avgV) = energy(path, K, V)
 end

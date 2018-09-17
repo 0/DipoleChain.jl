@@ -1,9 +1,12 @@
 #!/usr/bin/env julia
 
-push!(LOAD_PATH, joinpath(dirname(@__FILE__), "../src"))
 using DipoleChain
 
+using Printf
+using SparseArrays
+
 using ArgParse
+using Arpack
 
 s = ArgParseSettings()
 s.autofix_names = true
