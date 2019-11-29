@@ -89,16 +89,28 @@ println_result("E0 = $(E0)")
 
 
 println("[ ] Calculating correlations.")
-@time for (op_name, op_f) in [("x", dense_x), ("z", dense_z)]
-    println_result("<$(op_name)_i $(op_name)_j>")
-    op = op_f(basis)
+@time for (op1_name, op1_f, op1_pow, op2_name, op2_f, op2_pow) in
+        [("x", dense_x, 1, "x", dense_x, 1),
+         ("z", dense_z, 1, "z", dense_z, 1),
+         ("z", dense_z, 2, "z", dense_z, 2)]
+    op1_fullname = "$(op1_name)_i"
+    if op1_pow != 1
+        op1_fullname = "$(op1_fullname)^$(op1_pow)"
+    end
+    op2_fullname = "$(op2_name)_j"
+    if op2_pow != 1
+        op2_fullname = "$(op2_fullname)^$(op2_pow)"
+    end
+    println_result("<$(op1_fullname) $(op2_fullname)>")
+    op1 = op1_f(basis)^op1_pow
+    op2 = op2_f(basis)^op2_pow
     for i in 1:N
         for j in 1:(i-1)
             @printf("%18s ", "")
         end
-        @printf(" % .15f", expval1(basis, op*op, i, wf))
+        @printf(" % .15f", expval1(basis, op1*op2, i, wf))
         for j in (i+1):N
-            @printf(" % .15f", expval2(basis, op, i, op, j, wf))
+            @printf(" % .15f", expval2(basis, op1, i, op2, j, wf))
         end
         println()
     end
