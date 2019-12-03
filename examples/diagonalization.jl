@@ -57,7 +57,7 @@ R = c[:R]
 N = c[:N]
 l_max = c[:l_max]
 l_total_max = c[:l_total_max]
-if l_total_max === nothing
+if isnothing(l_total_max)
     l_total_max = l_max * N
 end
 sym_lp = c[:sym_lp]

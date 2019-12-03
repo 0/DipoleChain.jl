@@ -1,5 +1,5 @@
 function expmk(k::Float64, op::AbstractVector{Float64})
-    diagm(0 => exp.(k .* op))
+    diagm(exp.(k .* op))
 end
 
 function expmk(k::Float64, op::AbstractMatrix{Float64})
@@ -16,7 +16,7 @@ Trotter decomposition.
 The first term in `ops` is placed in the middle of the decomposition.
 """
 function symmetric_trotter_path(num_links::Int, tau::Float64, ops::AbstractArray...)
-    step = eye(size(ops[1])...)
+    step = I(size(ops[1])[1])
 
     for i in length(ops):-1:2
         step *= expmk(-tau/2, ops[i])
@@ -41,7 +41,7 @@ function symmetric_trotter_path(num_links::Int, tau::Float64, ops::Dict...)
     path = Dict{BlockLabel,Matrix{Float64}}()
 
     for label in keys(ops[1])
-        step = eye(size(ops[1][label])...)
+        step = I(size(ops[1][label])[1])
 
         for i in length(ops):-1:2
             step *= expmk(-tau/2, ops[i][label])
@@ -76,7 +76,7 @@ function wf_pigs(half_path::Matrix{Float64}, trial_idx::Int)
 end
 
 
-mult_by_op(op1::AbstractMatrix{Float64}, op2::AbstractVector{Float64}) = op1 * diagm(0 => op2)
+mult_by_op(op1::AbstractMatrix{Float64}, op2::AbstractVector{Float64}) = op1 * diagm(op2)
 mult_by_op(op1::AbstractMatrix{Float64}, op2::AbstractMatrix{Float64}) = op1 * op2
 
 

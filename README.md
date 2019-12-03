@@ -2,7 +2,7 @@
 
 Exact sparse diagonalization and path integral matrix multiplication for a linear chain of evenly-spaced [linear rigid rotors](https://en.wikipedia.org/wiki/Rigid_rotor#Quantum_mechanical_linear_rigid_rotor) with [dipole-dipole interactions](https://en.wikipedia.org/wiki/Intermolecular_force#Dipole-dipole_interactions).
 
-Tested with Julia 1.0.
+Tested with Julia 1.3.
 
 
 ## Installation

@@ -59,12 +59,12 @@ R = c[:R]
 N = c[:N]
 l_max = c[:l_max]
 l_total_max = c[:l_total_max]
-if l_total_max === nothing
+if isnothing(l_total_max)
     l_total_max = l_max * N
 end
 beta = c[:beta]
 tau = c[:tau]
-if beta === nothing && tau === nothing || beta !== nothing && tau !== nothing
+if isnothing(beta) && isnothing(tau) || !isnothing(beta) && !isnothing(tau)
     println("Exactly one of --beta or --tau must be set.")
     exit()
 end
@@ -83,9 +83,9 @@ else
     num_links = P
 end
 
-if beta === nothing
+if isnothing(beta)
     beta = tau * num_links
-elseif tau === nothing
+elseif isnothing(tau)
     tau = beta / num_links
 end
 
