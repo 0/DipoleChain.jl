@@ -1,14 +1,21 @@
+function rot_elem(N::Int, v::Vector{Int})
+    elem = 0.0
+
+    for i in 1:N
+        l = v[2i-1]
+        elem += l*(l+1)
+    end
+
+    elem
+end
+
 function sparse_rot(block::Block{N}) where {N}
     rows = Int[]
     elems = Float64[]
 
     for row in 1:block.size
-        elem = 0.0
-
-        for i in 1:N
-            l = block.vectors[row][2i-1]
-            elem += l*(l+1)
-        end
+        v = block.vectors[row]
+        elem = rot_elem(N, v)
 
         push!(rows, row)
         push!(elems, elem)
@@ -84,6 +91,46 @@ function pot_elem(l1::Int, m1::Int, l2::Int, m2::Int, l1p::Int, m1p::Int, l2p::I
 end
 
 
+function pot_rows(f::Function, N::Int, l_max::Int, l_total_max::Int, v::Vector{Int}, w::Vector{Int})
+    l_total = 0
+    for i in 1:N
+        l_total += v[2i-1]
+    end
+
+    # All rotor pairs.
+    for i in 1:(N-1)
+        for j in (i+1):N
+            # All potentially allowed transitions.
+            for delta_li in [-1, 1]
+                for delta_lj in [-1, 1]
+                    for delta_m in -1:1
+                        w .= v
+                        w[2i-1] += delta_li
+                        w[2i] += delta_m
+                        w[2j-1] += delta_lj
+                        w[2j] -= delta_m
+
+                        # Bounds on l.
+                        0 <= w[2i-1] <= l_max || continue
+                        0 <= w[2j-1] <= l_max || continue
+                        l_total + delta_li + delta_lj <= l_total_max || continue
+                        # Bounds on m.
+                        -w[2i-1] <= w[2i] <= w[2i-1] || continue
+                        -w[2j-1] <= w[2j] <= w[2j-1] || continue
+
+                        unscaled = pot_elem(v[2i-1], v[2i], v[2j-1], v[2j], w[2i-1], w[2i], w[2j-1], w[2j])
+                        elem = 0.5 * unscaled / (j-i)^3
+
+                        f(elem)
+                    end
+                end
+            end
+        end
+    end
+
+    nothing
+end
+
 function sparse_pot(basis::AbstractBasis{N}, block::Block{N}) where {N}
     rows = Int[]
     cols = Int[]
@@ -93,42 +140,13 @@ function sparse_pot(basis::AbstractBasis{N}, block::Block{N}) where {N}
 
     for col in 1:block.size
         v = block.vectors[col]
-        l_total = 0
-        for i in 1:N
-            l_total += v[2i-1]
-        end
 
-        # All rotor pairs.
-        for i in 1:(N-1)
-            for j in (i+1):N
-                # All potentially allowed transitions.
-                for delta_li in [-1, 1]
-                    for delta_lj in [-1, 1]
-                        for delta_m in -1:1
-                            w .= v
-                            w[2i-1] += delta_li
-                            w[2i] += delta_m
-                            w[2j-1] += delta_lj
-                            w[2j] -= delta_m
+        pot_rows(N, basis.l_max, basis.l_total_max, v, w) do elem
+            row = block.lookup[w]
 
-                            # Bounds on l.
-                            0 <= w[2i-1] <= basis.l_max || continue
-                            0 <= w[2j-1] <= basis.l_max || continue
-                            l_total + delta_li + delta_lj <= basis.l_total_max || continue
-                            # Bounds on m.
-                            -w[2i-1] <= w[2i] <= w[2i-1] || continue
-                            -w[2j-1] <= w[2j] <= w[2j-1] || continue
-
-                            row = block.lookup[w]
-                            elem = 0.5 * pot_elem(v[2i-1], v[2i], v[2j-1], v[2j], w[2i-1], w[2i], w[2j-1], w[2j]) / (j-i)^3
-
-                            push!(rows, row)
-                            push!(cols, col)
-                            push!(elems, elem)
-                        end
-                    end
-                end
-            end
+            push!(rows, row)
+            push!(cols, col)
+            push!(elems, elem)
         end
     end
 
